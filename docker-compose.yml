@@ -1,0 +1,86 @@
+services:
+  wordpress_app:
+    container_name: wordpress_app
+    volumes:
+      - wpcore:/var/www/html
+    networks:
+      - wp_backend
+      - wp_frontend
+    image: wordpress:6.9.4-php8.2-fpm
+    environment:
+      - WORDPRESS_CONFIG_EXTRA=define('WP_REDIS_HOST', 'object_cache');
+      - WORDPRESS_DB_HOST=db_app
+      - WORDPRESS_DB_USER=${WP_USER}
+      - WORDPRESS_DB_PASSWORD=${WP_PASSWD}
+      - WORDPRESS_DB_NAME=${WP_DB}
+    restart: always
+    depends_on:
+      db_app:
+        condition: service_healthy
+      object_cache:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m" #10mb in size
+        max-file: "3"  #max 3 log files
+
+  db_app:
+    container_name: db_app
+    image: mariadb:11.4
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - wp_backend
+    environment:
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASS}
+      - MARIADB_DATABASE=${WP_DB}
+      - MARIADB_USER=${WP_USER}
+      - MARIADB_PASSWORD=${WP_PASSWD}
+    restart: always
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "${WP_USER}", "-p${WP_PASSWD}"]
+      retries: 5
+      interval: 5s
+      timeout: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G #max 1GB memory usage for DB cache
+
+  nginx_proxy:
+    image: nginx:1.29-alpine
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    networks:
+      - wp_backend
+      - wp_frontend
+    restart: unless-stopped
+    volumes:
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf
+      - wpcore:/var/www/html
+  object_cache:
+    image: redis:8.4-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./conf/redis.conf:/etc/redis/redis.conf
+    networks:
+      - wp_backend
+    container_name: redis_cache
+
+
+networks:
+  wp_frontend:
+  wp_backend:
+    internal: true
+
+volumes:
+  db:
+  wpcore:
