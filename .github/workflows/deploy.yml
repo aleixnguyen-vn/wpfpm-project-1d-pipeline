@@ -1,0 +1,83 @@
+name Continous Deployment to Vultr VPS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  bootstrap-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Server Provisioning
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VULTR_VPS_IP }}
+          username: root
+          port: ${{ secrets.VULTR_VPS_PORT }}
+          password: ${{ secrets.VULTR_VPS_PASS }}
+          script: |
+        echo "==== PHASE 1: BOOTSTRAP EVIRONMENT ===="
+              
+          # make app dir
+          mkdir -p /app/project-1d
+
+          # Check Docker
+                      if ! command -v docker &> /dev/null; then
+                echo "Installing docker....."
+                apt-get update -y
+                apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+                echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/list.d/docker.list > /dev/null
+                apt-get update -y
+                apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+                systemctl start docker
+                systemctl enable docker
+                echo "Docker has been successfully installed!"
+            else
+                echo "✓ Docker is already installed! Ready to deploy!."
+            fi
+
+# Job #2: Deploy Stack to Vultr VPS
+jobs:
+  deploy:
+    needs: [boostrap-env]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Copy Files to Vultr via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VULTR_VPS_IP }}
+          username: root
+          port: ${{ secrets.VULTR_VPS_PORT }}
+          password: ${{ secrets.VULTR_VPS_PASS }}
+          source: "./docker-compose.yml,./conf"
+          target: "/app/project-1d"
+      - name: Deploy using Docker
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VULTR_VPS_IP }}
+          username: root
+          port: ${{ secrets.VULTR_VPS_PORT }}
+          password: ${{ secrets.VULTR_VPS_PASS }}
+
+        script: |
+          echo "==== PHASE 2: Deploy to projection"
+            cd /app/project-1d
+            
+            # make .env file
+            echo "WP_USER=${{ secrets.WP_USER }}"
+            echo "WP_PASSWD=${{ secrets.WP_PASSWD }}"
+            echo "WP_DB=${{ sercets.WP_DB }}"
+            echo "DB_ROOT_PASS=${{ secrets.DB_ROOT_PASS }}"
+            
+            # start the app
+            docker compose down
+            docker compose up -d
+
+            echo "==== READY TO SERVE! ===="
+            docker ps
+
