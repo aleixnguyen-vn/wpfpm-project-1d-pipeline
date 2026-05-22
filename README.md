@@ -1,8 +1,9 @@
-# Automated Docker WordPress Stack via IaC & CI/CD Pipeline
+# My Automated WordPress Stack (From Manual Configuration to CI/CD)
 
-A high-performance WordPress infrastructure automated from infrastructure provisioning to application deployment. This project demonstrates modern DevOps practices by replacing manual server configuration ("ClickOps") with a robust **Infrastructure as Code (IaC)** and **CI/CD** workflow targeting a DigitalOcean production environment. 🦅🦅
+## 📌 So what's up with this repo?
+This is a personal lab where I migrated a legacy WordPress stack from standard hand-guided server setups ("ClickOps") to a fully automated pipeline using **Terraform** and **GitHub Actions**. 
 
----
+To be honest, a year ago, I used to log into servers via SSH and manually type every single Docker command, or use panel interfaces to configure everything. It worked, but it was a nightmare to track changes or reproduce if the server went down. This repo is my practical journey to fix that bad habit by defining everything as code.
 
 ## 🏗️ Architecture & Stack Overview
 
