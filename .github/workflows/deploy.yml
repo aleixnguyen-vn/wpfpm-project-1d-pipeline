@@ -16,7 +16,7 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
           host: ${{ secrets.DO_DROPLET_IP }}
           username: root
           port: ${{ secrets.DO_DROPLET_PORT }}
-          password: ${{ secrets.DO_DROPLET_PASS }}
+          key: ${{ secrets.DO_SSH_PRIV_KEY }}
           script: |
             echo "==== PHASE 1: BOOTSTRAP ENVIRONMENT ===="
             
@@ -54,7 +54,7 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
           host: ${{ secrets.DO_DROPLET_IP }}
           username: root
           port: ${{ secrets.DO_DROPLET_PORT }}
-          password: ${{ secrets.DO_DROPLET_PASS }}
+          key: ${{ secrets.DO_SSH_PRIV_KEY }}
           source: "./docker-compose.yml,./conf" # Sếp nhớ check xem thư mục config của sếp tên là conf hay nginx nhé
           target: "/app/project-1d"
 
@@ -64,7 +64,7 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
           host: ${{ secrets.DO_DROPLET_IP }}
           username: root
           port: ${{ secrets.DO_DROPLET_PORT }}
-          password: ${{ secrets.DO_DROPLET_PASS }}
+          key: ${{ secrets.DO_SSH_PRIV_KEY }}
           script: |
             echo "==== PHASE 2: Deploy to production ===="
             cd /app/project-1d
