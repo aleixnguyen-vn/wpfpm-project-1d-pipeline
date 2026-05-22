@@ -1,10 +1,12 @@
-name Continous Deployment to Digital Ocean Droplet
+name: Continous Deployment to Digital Ocean Droplet
 
 on:
   push:
     branches: [ "main" ]
 
-jobs:
+jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
+
+  # === JOB 1: BOOTSTRAP MÔI TRƯỜNG ===
   bootstrap-env:
     runs-on: ubuntu-latest
     steps:
@@ -16,18 +18,18 @@ jobs:
           port: ${{ secrets.DO_DROPLET_PORT }}
           password: ${{ secrets.DO_DROPLET_PASS }}
           script: |
-        echo "==== PHASE 1: BOOTSTRAP EVIRONMENT ===="
-              
-          # make app dir
-          mkdir -p /app/project-1d
+            echo "==== PHASE 1: BOOTSTRAP ENVIRONMENT ===="
+            
+            # make app dir
+            mkdir -p /app/project-1d
 
-          # Check Docker
-                      if ! command -v docker &> /dev/null; then
+            # Check Docker
+            if ! command -v docker &> /dev/null; then
                 echo "Installing docker....."
                 apt-get update -y
                 apt-get install -y apt-transport-https ca-certificates curl software-properties-common
                 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-                echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/list.d/docker.list > /dev/null
+                echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
                 apt-get update -y
                 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
                 systemctl start docker
@@ -37,25 +39,25 @@ jobs:
                 echo "✓ Docker is already installed! Ready to deploy!."
             fi
 
-# Job #2: Deploy Stack to Vultr VPS
-jobs:
+  # === JOB 2: DEPLOY APP SANG DIGITALOCEAN ===
   deploy:
-    needs: [boostrap-env]
+    needs: [bootstrap-env] # Đã fix đúng chính tả để khóa xích ăn khớp
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Copy Files to Vultr via SCP
+      - name: Copy Files to DigitalOcean via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DO_DROPLET_IP }}
           username: root
           port: ${{ secrets.DO_DROPLET_PORT }}
           password: ${{ secrets.DO_DROPLET_PASS }}
-          source: "./docker-compose.yml,./conf"
+          source: "./docker-compose.yml,./conf" # Sếp nhớ check xem thư mục config của sếp tên là conf hay nginx nhé
           target: "/app/project-1d"
+
       - name: Deploy using Docker
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -63,21 +65,19 @@ jobs:
           username: root
           port: ${{ secrets.DO_DROPLET_PORT }}
           password: ${{ secrets.DO_DROPLET_PASS }}
-
-        script: |
-          echo "==== PHASE 2: Deploy to projection"
+          script: |
+            echo "==== PHASE 2: Deploy to production ===="
             cd /app/project-1d
             
-            # make .env file
-            echo "WP_USER=${{ secrets.WP_USER }}"
-            echo "WP_PASSWD=${{ secrets.WP_PASSWD }}"
-            echo "WP_DB=${{ sercets.WP_DB }}"
-            echo "DB_ROOT_PASS=${{ secrets.DB_ROOT_PASS }}"
+            # Ghi đè mật khẩu bảo mật thật vào file .env trên Droplet (Đã fix syntax ghi file)
+            echo "WP_USER=${{ secrets.WP_USER }}" > .env
+            echo "WP_PASSWD=${{ secrets.WP_PASSWD }}" >> .env
+            echo "WP_DB=${{ secrets.WP_DB }}" >> .env
+            echo "DB_ROOT_PASS=${{ secrets.DB_ROOT_PASS }}" >> .env
             
-            # start the app
+            # Start the app
             docker compose down
             docker compose up -d
 
             echo "==== READY TO SERVE! ===="
-            docker ps
-
+            docker compose ps
