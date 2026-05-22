@@ -1,12 +1,13 @@
 name: Continous Deployment to Digital Ocean Droplet
+# fix syntax
 
 on:
   push:
     branches: [ "main" ]
 
-jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
+jobs: # Fix syntax - only one 'jobs' keyword
 
-  # === JOB 1: BOOTSTRAP MÔI TRƯỜNG ===
+  # === JOB 1: BOOTSTRAP VPS ===
   bootstrap-env:
     runs-on: ubuntu-latest
     steps:
@@ -43,9 +44,9 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
                 echo "✓ Docker is already installed! Ready to deploy!."
             fi
 
-  # === JOB 2: DEPLOY APP SANG DIGITALOCEAN ===
+  # === JOB 2: DEPLOY to DIGITALOCEAN ===
   deploy:
-    needs: [bootstrap-env] # Đã fix đúng chính tả để khóa xích ăn khớp
+    needs: [bootstrap-env] # Fix typo
     runs-on: ubuntu-latest
     
     steps:
@@ -59,7 +60,7 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
           username: root
           port: ${{ secrets.DO_DROPLET_PORT }}
           key: ${{ secrets.DO_SSH_PRIV_KEY }}
-          source: "./docker-compose.yml,./conf" # Sếp nhớ check xem thư mục config của sếp tên là conf hay nginx nhé
+          source: "./docker-compose.yml,./conf"
           target: "/app/project-1d"
 
       - name: Deploy using Docker
@@ -73,7 +74,7 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
             echo "==== PHASE 2: Deploy to production ===="
             cd /app/project-1d
             
-            # Ghi đè mật khẩu bảo mật thật vào file .env trên Droplet (Đã fix syntax ghi file)
+            # Make .env file from GitHub Secret 
             echo "WP_USER=${{ secrets.WP_USER }}" > .env
             echo "WP_PASSWD=${{ secrets.WP_PASSWD }}" >> .env
             echo "WP_DB=${{ secrets.WP_DB }}" >> .env
