@@ -20,6 +20,10 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
           script: |
             echo "==== PHASE 1: BOOTSTRAP ENVIRONMENT ===="
             
+            # update server
+            apt upgrade && apt update -y
+
+
             # make app dir
             mkdir -p /app/project-1d
 
@@ -76,8 +80,7 @@ jobs: # Chỉ khai báo TỪ KHÓA CHA này ĐÚNG MỘT LẦN duy nhất!
             echo "DB_ROOT_PASS=${{ secrets.DB_ROOT_PASS }}" >> .env
             
             # Start the app
-            docker compose down
-            docker compose up -d
+            docker compose up -d --build
 
             echo "==== READY TO SERVE! ===="
             docker compose ps
