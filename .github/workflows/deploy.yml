@@ -1,4 +1,4 @@
-name Continous Deployment to Vultr VPS
+name Continous Deployment to Digital Ocean Droplet
 
 on:
   push:
@@ -11,10 +11,10 @@ jobs:
       - name: Server Provisioning
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VULTR_VPS_IP }}
+          host: ${{ secrets.DO_DROPLET_IP }}
           username: root
-          port: ${{ secrets.VULTR_VPS_PORT }}
-          password: ${{ secrets.VULTR_VPS_PASS }}
+          port: ${{ secrets.DO_DROPLET_PORT }}
+          password: ${{ secrets.DO_DROPLET_PASS }}
           script: |
         echo "==== PHASE 1: BOOTSTRAP EVIRONMENT ===="
               
@@ -50,19 +50,19 @@ jobs:
       - name: Copy Files to Vultr via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.VULTR_VPS_IP }}
+          host: ${{ secrets.DO_DROPLET_IP }}
           username: root
-          port: ${{ secrets.VULTR_VPS_PORT }}
-          password: ${{ secrets.VULTR_VPS_PASS }}
+          port: ${{ secrets.DO_DROPLET_PORT }}
+          password: ${{ secrets.DO_DROPLET_PASS }}
           source: "./docker-compose.yml,./conf"
           target: "/app/project-1d"
       - name: Deploy using Docker
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VULTR_VPS_IP }}
+          host: ${{ secrets.DO_DROPLET_IP }}
           username: root
-          port: ${{ secrets.VULTR_VPS_PORT }}
-          password: ${{ secrets.VULTR_VPS_PASS }}
+          port: ${{ secrets.DO_DROPLET_PORT }}
+          password: ${{ secrets.DO_DROPLET_PASS }}
 
         script: |
           echo "==== PHASE 2: Deploy to projection"
