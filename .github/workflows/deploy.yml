@@ -2,8 +2,7 @@ name: Continous Deployment to Digital Ocean Droplet
 # fix syntax
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch: # Trigger workflow manually from GitHub Actions tab
 
 jobs: # Fix syntax - only one 'jobs' keyword
 
