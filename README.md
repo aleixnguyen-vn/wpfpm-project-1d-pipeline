@@ -51,7 +51,7 @@ The GitHub Actions pipeline is architected into two sequential, dependent stages
 
 Optimized from initial failed deployments
 
-## 🔧 Infrastructure as Code (Terraform)
+## Infrastructure as Code (Terraform)
 
 Instance is completedly deployed and managed using IaC (Terraform), first i choose Vultr but then i has some issues with my account so at the end I must switch to Digital Ocean. This **[IaC Vultr](https://github.com/aleixnguyen-vn/iac-vultr)** is the configuration i used, you can check it out.
 
