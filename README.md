@@ -1,11 +1,10 @@
 # My Automated WordPress Stack (From Manual Configuration to CI/CD)
 
-## 📌 So what's up with this repo?
 This is a personal lab where I migrated a legacy WordPress stack from standard hand-guided server setups ("ClickOps") to a fully automated pipeline using **Terraform** and **GitHub Actions**. 
 
 To be honest, a year ago, I used to log into servers via SSH and manually type every single Docker command, or use panel interfaces to configure everything. It worked, but it was a nightmare to track changes or reproduce if the server went down. This repo is my practical journey to fix that bad habit by defining everything as code.
 
-## 🏗️ Architecture & Stack Overview
+## Architecture & Stack Overview
 
 The infrastructure isolates core components into dedicated, lightweight containers managed by Docker Compose, optimized to deliver high concurrency under low resource constraints (1GB RAM). I pick some alpine version for Redis and NGINX for better performance
 
@@ -17,7 +16,7 @@ The infrastructure isolates core components into dedicated, lightweight containe
 
 ---
 
-## 🚀 CI/CD Pipeline Workflow (`needs:` DAG Execution)
+## CI/CD Pipeline Workflow (`needs:` DAG Execution)
 
 The GitHub Actions pipeline is architected into two sequential, dependent stages to ensure strict **Idempotency** and environmental safety.
 
@@ -54,9 +53,9 @@ Optimized from initial failed deployments
 
 ## 🔧 Infrastructure as Code (Terraform)
 
-Instance is completedly deployed and managed using IaC (Terraform), first i choose Vultr but then i has some issues with my account so at the end I must switch to Digital Ocean. This 🫴🫴**[IaC Vultr](https://github.com/aleixnguyen-vn/iac-vultr)** is the configuration i used, you can check it out.
+Instance is completedly deployed and managed using IaC (Terraform), first i choose Vultr but then i has some issues with my account so at the end I must switch to Digital Ocean. This **[IaC Vultr](https://github.com/aleixnguyen-vn/iac-vultr)** is the configuration i used, you can check it out.
 
-## 📊 Verification & Proof of Work
+## Verification & Proof of Work
 
 > Note: The droplet is transient and heavily rotated (Destroyed after completed my project).
 
@@ -79,10 +78,10 @@ The functional WordPress homepage application, just some basic content
 
 ![Homepage](/images/home.png)
 
-## 🔑 Security & Hardening
+## Security & Hardening
 
 * **Zero Credential Leaking**: Plaintext credentials, DB root tokens, and system accessibility variables are strictly banned from code tracking via an aggressive .gitignore.
 
-* **GitHub Repository Secrets**: Production access strings (DO_DROPLET_IP, DO_DROPLET_PASS) are injected directly into the execution container runtime memory and completely masked (***) within pipeline terminal logs.
+* **GitHub Repository Secrets**: Production access strings (DO_DROPLET_IP, DO_SSH_PRIV_KEY) are injected directly into the execution container runtime memory and completely masked (***) within pipeline terminal logs.
 
-> That's all for today xd
+> That's all for today.
